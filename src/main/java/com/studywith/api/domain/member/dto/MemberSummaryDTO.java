@@ -7,18 +7,18 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberCreateDTO {
+public class MemberSummaryDTO {
+
+    private Long id;
 
     private String nickname;
 
-    private String gender;
-
-    private String birth;
-
-    private String region;
+    private String email;
 
     private String profileImage;
 
-    private String bio;
+    private String role;
+
+    private boolean isActive;
 
 }

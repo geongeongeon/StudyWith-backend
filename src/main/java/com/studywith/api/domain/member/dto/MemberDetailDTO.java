@@ -7,9 +7,11 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberCreateDTO {
+public class MemberDetailDTO {
 
     private String nickname;
+
+    private String email;
 
     private String gender;
 
@@ -20,5 +22,9 @@ public class MemberCreateDTO {
     private String profileImage;
 
     private String bio;
+
+    private String createDate;
+
+    private String modifyDate;
 
 }
