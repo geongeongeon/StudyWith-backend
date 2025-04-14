@@ -4,7 +4,6 @@ import com.studywith.api.domain.member.dto.MemberCreateDTO;
 import com.studywith.api.domain.member.dto.MemberDetailDTO;
 import com.studywith.api.domain.member.dto.MemberNicknameDTO;
 import com.studywith.api.domain.member.dto.MemberSummaryDTO;
-import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.service.MemberService;
 import com.studywith.api.global.response.ApiResponse;
 import com.studywith.api.global.util.SuccessResponseUtil;
@@ -23,16 +22,16 @@ public class MemberController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(@RequestBody MemberCreateDTO memberCreateDTO) {
-        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, "testUserLoginId01", "testUser01@google.com", AccountType.GOOGLE);
+        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, "testMemberLoginId1", "testMember1@google.com","GOOGLE");
 
         return SuccessResponseUtil.created("회원 가입이 성공적으로 완료되었습니다.", createdMember);
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<MemberSummaryDTO>>> getMembers() {
-        List<MemberSummaryDTO> members = memberService.getMembers();
+    @GetMapping("/exists")
+    public ResponseEntity<ApiResponse<MemberNicknameDTO>> isNicknameExists(@RequestParam("nickname") String nicknameParam) {
+        MemberNicknameDTO nickname = memberService.isNicknameExists(nicknameParam);
 
-        return SuccessResponseUtil.ok("회원 목록을 성공적으로 불러왔습니다.", members);
+        return SuccessResponseUtil.ok("사용 가능한 별명입니다.", nickname);
     }
 
     @GetMapping("/{id}")
@@ -42,11 +41,11 @@ public class MemberController {
         return SuccessResponseUtil.ok("회원을 성공적으로 조회했습니다.", member);
     }
 
-    @GetMapping("/exists")
-    public ResponseEntity<ApiResponse<MemberNicknameDTO>> isNicknameExists(@RequestParam("nickname") String nicknameParam) {
-        MemberNicknameDTO nickname = memberService.isNicknameExists(nicknameParam);
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<MemberSummaryDTO>>> getMembers() {
+        List<MemberSummaryDTO> members = memberService.getMembers();
 
-        return SuccessResponseUtil.ok("사용 가능한 별명입니다.", nickname);
+        return SuccessResponseUtil.ok("회원 목록을 성공적으로 불러왔습니다.", members);
     }
 
 }

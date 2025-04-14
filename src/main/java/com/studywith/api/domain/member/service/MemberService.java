@@ -11,6 +11,7 @@ import com.studywith.api.domain.member.repository.MemberRepository;
 import com.studywith.api.global.exception.NicknameAlreadyInUseException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,26 +26,12 @@ public class MemberService {
     private final MemberMapper memberMapper;
 
     @Transactional
-    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String loginId, String email, AccountType accountType) {
+    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String loginId, String email, String accountType) {
         setDefaultValues(memberCreateDTO);
 
-        Member member = memberMapper.toCreateEntity(memberCreateDTO, loginId, email, accountType);
+        Member member = memberMapper.toCreateEntity(memberCreateDTO, loginId, email, AccountType.valueOf(accountType));
 
         return memberMapper.toCreateDTO(memberRepository.save(member));
-    }
-
-    public List<MemberSummaryDTO> getMembers() {
-        List<Member> members = memberRepository.findAll();
-
-        return members.stream()
-                .map(memberMapper::toSummaryDTO)
-                .collect(Collectors.toList());
-    }
-
-    public MemberDetailDTO getMemberById(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
-
-        return memberMapper.toDetailDTO(member);
     }
 
     public MemberNicknameDTO isNicknameExists(String nickname) {
@@ -55,12 +42,26 @@ public class MemberService {
         return memberMapper.toNicknameDTO(nickname);
     }
 
+    public MemberDetailDTO getMemberById(Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+
+        return memberMapper.toDetailDTO(member);
+    }
+
+    public List<MemberSummaryDTO> getMembers() {
+        List<Member> members = memberRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+
+        return members.stream()
+                .map(memberMapper::toSummaryDTO)
+                .collect(Collectors.toList());
+    }
+
     private void setDefaultValues(MemberCreateDTO memberCreateDTO) {
         if (memberCreateDTO.getProfileImage() == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/images/male.png");
+                memberCreateDTO.setProfileImage("/images/profile/default/male.png");
             } else if ("F".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/images/female.png");
+                memberCreateDTO.setProfileImage("/images/profile/default/female.png");
             }
         }
 
