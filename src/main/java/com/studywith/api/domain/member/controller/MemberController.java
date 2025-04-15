@@ -47,10 +47,17 @@ public class MemberController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MemberUpdateDTO>> partialUpdateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberUpdateDTO memberUpdateDTO) {
+    public ResponseEntity<ApiResponse<MemberUpdateDTO>> updateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberUpdateDTO memberUpdateDTO) {
         MemberUpdateDTO updatedMember = memberService.updateMember(id, memberUpdateDTO);
 
-        return SuccessResponseUtil.ok("회원을 성공적으로 수정했습니다.", updatedMember);
+        return SuccessResponseUtil.ok("회원이 성공적으로 수정되었습니다.", updatedMember);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Object>> deleteMember(@PathVariable("id") Long id) {
+        memberService.deleteMember(id);
+
+        return SuccessResponseUtil.ok("회원이 성공적으로 삭제되었습니다.", null);
     }
 
 }

@@ -96,4 +96,15 @@ public class MemberApiTest {
         assertThatThrownBy(() -> memberService.updateMember(secondMemberId, TestMemberFactory.getSecondMemberUpdateDTO())).isInstanceOf(MemberNoChangesException.class);
     }
 
+    @Test
+    @DisplayName("회원 삭제하기")
+    void t006() {
+        memberService.deleteMember(firstMemberId);
+        memberService.deleteMember(secondMemberId);
+
+        assertThat(memberRepository.count()).isEqualTo(initialMemberCount);
+
+        assertThatThrownBy(() -> memberService.deleteMember(firstMemberId)).isInstanceOf(MemberNotFoundException.class);
+    }
+
 }

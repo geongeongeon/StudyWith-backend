@@ -64,6 +64,13 @@ public class MemberService {
         return memberMapper.toUpdateDTO(memberRepository.save(member));
     }
 
+    @Transactional
+    public void deleteMember(Long id) {
+        memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        memberRepository.deleteById(id);
+    }
+
     private void setDefaultValues(MemberCreateDTO memberCreateDTO) {
         if (memberCreateDTO.getProfileImage() == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
