@@ -1,6 +1,7 @@
 package com.studywith.api.global.exception;
 
 import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
+import com.studywith.api.domain.member.exception.MemberNoChangesException;
 import com.studywith.api.domain.member.exception.MemberNotFoundException;
 import com.studywith.api.global.response.ApiResponse;
 import com.studywith.api.global.util.FailureResponseUtil;
@@ -19,6 +20,11 @@ public class CustomExceptionHandler {
     @ExceptionHandler(MemberNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> memberNotFoundExceptionHandler(MemberNotFoundException e) {
         return FailureResponseUtil.notFound(e.getMessage());
+    }
+
+    @ExceptionHandler(MemberNoChangesException.class)
+    public ResponseEntity<ApiResponse<Object>> memberNoChangesExceptionHandler(MemberNoChangesException e) {
+        return FailureResponseUtil.badRequest(e.getMessage());
     }
 
 }

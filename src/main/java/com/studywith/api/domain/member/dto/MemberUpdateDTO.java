@@ -8,22 +8,18 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberCreateDTO {
+public class MemberUpdateDTO {
 
     @NotNull
     private String nickname;
 
     @NotNull
-    private String gender;
-
-    @NotNull
-    private String birth;
-
-    @NotNull
     private String region;
 
+    @NotNull
     private String profileImage;
 
+    @NotNull
     private String bio;
 
 }

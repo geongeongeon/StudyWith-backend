@@ -1,9 +1,6 @@
 package com.studywith.api.domain.member.mapper;
 
-import com.studywith.api.domain.member.dto.MemberCreateDTO;
-import com.studywith.api.domain.member.dto.MemberDetailDTO;
-import com.studywith.api.domain.member.dto.MemberSummaryDTO;
-import com.studywith.api.domain.member.dto.MemberNicknameDTO;
+import com.studywith.api.domain.member.dto.*;
 import com.studywith.api.domain.member.entity.Member;
 import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.enums.Gender;
@@ -46,14 +43,9 @@ public class MemberMapper {
                 .build();
     }
 
-    public MemberSummaryDTO toSummaryDTO(Member member) {
-        return MemberSummaryDTO.builder()
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .email(member.getEmail())
-                .profileImage(member.getProfileImage())
-                .role(member.getRole().toString())
-                .isActive(member.isActive())
+    public MemberNicknameDTO toNicknameDTO(String nickname) {
+        return MemberNicknameDTO.builder()
+                .nickname(nickname)
                 .build();
     }
 
@@ -71,9 +63,23 @@ public class MemberMapper {
                 .build();
     }
 
-    public MemberNicknameDTO toNicknameDTO(String nickname) {
-        return MemberNicknameDTO.builder()
-                .nickname(nickname)
+    public MemberSummaryDTO toSummaryDTO(Member member) {
+        return MemberSummaryDTO.builder()
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .profileImage(member.getProfileImage())
+                .role(member.getRole().toString())
+                .isActive(member.isActive())
+                .build();
+    }
+
+    public MemberUpdateDTO toUpdateDTO(Member member) {
+        return MemberUpdateDTO.builder()
+                .nickname(member.getNickname())
+                .region(member.getRegion())
+                .profileImage(member.getProfileImage())
+                .bio(member.getBio())
                 .build();
     }
 

@@ -1,11 +1,9 @@
 package com.studywith.api.domain.member.service;
 
-import com.studywith.api.domain.member.dto.MemberCreateDTO;
-import com.studywith.api.domain.member.dto.MemberDetailDTO;
-import com.studywith.api.domain.member.dto.MemberSummaryDTO;
-import com.studywith.api.domain.member.dto.MemberNicknameDTO;
+import com.studywith.api.domain.member.dto.*;
 import com.studywith.api.domain.member.entity.Member;
 import com.studywith.api.domain.member.enums.AccountType;
+import com.studywith.api.domain.member.exception.MemberNoChangesException;
 import com.studywith.api.domain.member.mapper.MemberMapper;
 import com.studywith.api.domain.member.repository.MemberRepository;
 import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
@@ -28,7 +26,6 @@ public class MemberService {
     @Transactional
     public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String loginId, String email, String accountType) {
         setDefaultValues(memberCreateDTO);
-
         Member member = memberMapper.toCreateEntity(memberCreateDTO, loginId, email, AccountType.valueOf(accountType));
 
         return memberMapper.toCreateDTO(memberRepository.save(member));
@@ -56,6 +53,17 @@ public class MemberService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public MemberUpdateDTO updateMember(Long id, MemberUpdateDTO memberUpdateDTO) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        if (!updateFieldsIfChanged(member, memberUpdateDTO)) {
+            throw new MemberNoChangesException("변경된 정보가 없습니다.");
+        }
+
+        return memberMapper.toUpdateDTO(memberRepository.save(member));
+    }
+
     private void setDefaultValues(MemberCreateDTO memberCreateDTO) {
         if (memberCreateDTO.getProfileImage() == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
@@ -68,6 +76,32 @@ public class MemberService {
         if (memberCreateDTO.getBio() == null) {
             memberCreateDTO.setBio("안녕하세요. 만나서 반가워요!");
         }
+    }
+
+    private boolean updateFieldsIfChanged(Member member, MemberUpdateDTO memberUpdateDTO) {
+        boolean isChanged = false;
+
+        if (!member.getNickname().equals(memberUpdateDTO.getNickname())) {
+            member.setNickname(memberUpdateDTO.getNickname());
+            isChanged = true;
+        }
+
+        if (!member.getRegion().equals(memberUpdateDTO.getRegion())) {
+            member.setRegion(memberUpdateDTO.getRegion());
+            isChanged = true;
+        }
+
+        if (!member.getProfileImage().equals(memberUpdateDTO.getProfileImage())) {
+            member.setProfileImage(memberUpdateDTO.getProfileImage());
+            isChanged = true;
+        }
+
+        if (!member.getBio().equals(memberUpdateDTO.getBio())) {
+            member.setBio(memberUpdateDTO.getBio());
+            isChanged = true;
+        }
+
+        return isChanged;
     }
 
 }

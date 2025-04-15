@@ -5,6 +5,7 @@ import com.studywith.api.global.util.FailureResponseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,19 +18,19 @@ import java.time.format.DateTimeParseException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<ApiResponse<Object>> nullPointerExceptionHandler() {
-        return FailureResponseUtil.badRequest("일부 필드가 누락되었습니다.");
-    }
-
-    @ExceptionHandler({IllegalArgumentException.class, DateTimeParseException.class})
-    public ResponseEntity<ApiResponse<Object>> illegalArgumentExceptionAndDateTimeParseExceptionHandler() {
-        return FailureResponseUtil.badRequest("잘못된 인자가 제공되었습니다.");
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Object>> httpMessageNotReadableExceptionHandler() {
+        return FailureResponseUtil.badRequest("요청 본문이 없습니다.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> methodArgumentNotValidExceptionHandler() {
         return FailureResponseUtil.badRequest("유효성 검사가 실패했습니다.");
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, DateTimeParseException.class})
+    public ResponseEntity<ApiResponse<Object>> illegalArgumentExceptionAndDateTimeParseExceptionHandler() {
+        return FailureResponseUtil.badRequest("잘못된 인자가 제공되었습니다.");
     }
 
     @ExceptionHandler(AuthenticationException.class)

@@ -1,51 +1,25 @@
 package com.studywith.api.member;
 
 import com.studywith.api.domain.member.dto.MemberCreateDTO;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.studywith.api.domain.member.dto.MemberUpdateDTO;
 
-@Getter
-@AllArgsConstructor
 public class TestMemberFactory {
 
-    private String loginId;
-
-    private String nickname;
-
-    private String email;
-
-    private String gender;
-
-    private String birth;
-
-    private String region;
-
-    private String profileImage;
-
-    private String bio;
-
-    private String accountType;
-
-
-    public static TestMemberFactory member1() {
-        return new TestMemberFactory("GOOGLE_testMember1", "testMember1", "testMember1@google.com", "M", "2025-01-23",
-                "서울시 강남구", null, null, "GOOGLE");
+    public static MemberCreateDTO getFirstMemberCreateDTO() {
+        return new MemberCreateDTO("testMember1", "M", "2025-01-23", "서울시 강남구", null, null);
     }
 
-    public static TestMemberFactory member2() {
-        return new TestMemberFactory("NAVER_testMember2", "testMember2", "testMember2@naver.com", "F", "2025-03-12",
-                "서울시 강서구", "/images/profile/2/img.png", "testMember2입니다.", "NAVER");
+    public static MemberCreateDTO getSecondMemberCreateDTO() {
+        return new MemberCreateDTO("testMember2", "F", "2025-03-12", "서울시 강서구", "/images/profile/2/img.png", "testMember2입니다."
+        );
     }
 
-    public static MemberCreateDTO toCreateDTO(TestMemberFactory testMember) {
-        return MemberCreateDTO.builder()
-                .nickname(testMember.getNickname())
-                .gender(testMember.getGender())
-                .birth(testMember.getBirth())
-                .region(testMember.getRegion())
-                .profileImage(testMember.getProfileImage())
-                .bio(testMember.getBio())
-                .build();
+    public static  MemberUpdateDTO getFirstMemberUpdateDTO() {
+        return new MemberUpdateDTO("testMember1", "서울시 강남구", "/images/profile/1/img.png", "안녕하세요. 만나서 반가워요!");
+    }
+
+    public static MemberUpdateDTO getSecondMemberUpdateDTO() {
+        return new MemberUpdateDTO("testMember2", "서울시 강서구", "/images/profile/2/img.png", "testMember2입니다.");
     }
 
 }

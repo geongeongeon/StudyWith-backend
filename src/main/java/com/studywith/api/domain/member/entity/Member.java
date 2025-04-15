@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class Member extends BaseEntity {
 
     @Column(nullable = false, unique = true)
