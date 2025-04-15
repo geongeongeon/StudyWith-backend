@@ -8,8 +8,8 @@ import com.studywith.api.domain.member.entity.Member;
 import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.mapper.MemberMapper;
 import com.studywith.api.domain.member.repository.MemberRepository;
-import com.studywith.api.global.exception.NicknameAlreadyInUseException;
-import jakarta.persistence.EntityNotFoundException;
+import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
+import com.studywith.api.domain.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -36,14 +36,14 @@ public class MemberService {
 
     public MemberNicknameDTO isNicknameExists(String nickname) {
         if (memberRepository.existsByNickname(nickname)) {
-            throw new NicknameAlreadyInUseException("이미 사용 중인 별명입니다.");
+            throw new MemberNicknameAlreadyInUseException("이미 사용 중인 별명입니다.");
         }
 
         return memberMapper.toNicknameDTO(nickname);
     }
 
     public MemberDetailDTO getMemberById(Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
         return memberMapper.toDetailDTO(member);
     }
