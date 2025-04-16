@@ -20,7 +20,7 @@ public class MemberController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(@Valid @RequestBody MemberCreateDTO memberCreateDTO) {
-        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, "testMemberLoginId1", "testMember1@google.com","GOOGLE");
+        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, "GOOGLE_testMember", "testMember@google.com","GOOGLE");
 
         return SuccessResponseUtil.created("회원 가입이 성공적으로 완료되었습니다.", createdMember);
     }

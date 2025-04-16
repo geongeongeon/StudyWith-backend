@@ -9,6 +9,8 @@ import com.studywith.api.domain.member.repository.MemberRepository;
 import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
 import com.studywith.api.domain.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class MemberService {
         return memberMapper.toNicknameDTO(nickname);
     }
 
+    @Cacheable(value = "member", key = "#id")
     public MemberDetailDTO getMemberById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
@@ -54,6 +57,7 @@ public class MemberService {
     }
 
     @Transactional
+    @CacheEvict(value = "member", key = "#id")
     public MemberUpdateDTO updateMember(Long id, MemberUpdateDTO memberUpdateDTO) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
@@ -65,6 +69,7 @@ public class MemberService {
     }
 
     @Transactional
+    @CacheEvict(value = "member", key = "#id")
     public void deleteMember(Long id) {
         memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
