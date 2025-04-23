@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
@@ -12,5 +14,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     long getLastId();
 
     boolean existsByNickname(String nickname);
+
+    Optional<Member> findByLoginId(String loginId);
 
 }

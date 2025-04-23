@@ -1,4 +1,4 @@
-package com.studywith.api.global.base;
+package com.studywith.api.global.common;
 
 import jakarta.persistence.*;
 import lombok.Getter;

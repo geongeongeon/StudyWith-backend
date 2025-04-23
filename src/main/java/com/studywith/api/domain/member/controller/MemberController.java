@@ -3,7 +3,10 @@ package com.studywith.api.domain.member.controller;
 import com.studywith.api.domain.member.dto.*;
 import com.studywith.api.domain.member.service.MemberService;
 import com.studywith.api.global.response.ApiResponse;
+import com.studywith.api.global.util.ResponseHeaderUtil;
 import com.studywith.api.global.util.SuccessResponseUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +22,10 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(@Valid @RequestBody MemberCreateDTO memberCreateDTO) {
-        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, "GOOGLE_testMember", "testMember@google.com","GOOGLE");
+    public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(@Valid @RequestBody MemberCreateDTO memberCreateDTO, HttpServletRequest request, HttpServletResponse response) {
+        String uuid = ResponseHeaderUtil.getCookie(request, "UUID");
+        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, uuid);
+        ResponseHeaderUtil.setCookie(response, "UUID", "", 0L);
 
         return SuccessResponseUtil.created("회원 가입이 성공적으로 완료되었습니다.", createdMember);
     }
@@ -54,7 +59,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Object>> deleteMember(@PathVariable("id") Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable("id") Long id) {
         memberService.deleteMember(id);
 
         return SuccessResponseUtil.ok("회원이 성공적으로 삭제되었습니다.", null);

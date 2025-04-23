@@ -1,8 +1,5 @@
-package com.studywith.api.global.exception;
+package com.studywith.api.domain.member.exception;
 
-import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
-import com.studywith.api.domain.member.exception.MemberNoChangesException;
-import com.studywith.api.domain.member.exception.MemberNotFoundException;
 import com.studywith.api.global.response.ApiResponse;
 import com.studywith.api.global.util.FailureResponseUtil;
 import org.springframework.http.ResponseEntity;
@@ -10,11 +7,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class CustomExceptionHandler {
+public class MemberExceptionHandler {
 
     @ExceptionHandler(MemberNicknameAlreadyInUseException.class)
     public ResponseEntity<ApiResponse<Object>> memberNicknameAlreadyInUseExceptionHandler(MemberNicknameAlreadyInUseException e) {
         return FailureResponseUtil.conflict(e.getMessage());
+    }
+
+    @ExceptionHandler(MemberTempNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> memberTempNotFoundExceptionHandler(MemberTempNotFoundException e) {
+        return FailureResponseUtil.badRequest(e.getMessage());
     }
 
     @ExceptionHandler(MemberNotFoundException.class)

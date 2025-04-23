@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -33,8 +34,8 @@ public class GlobalExceptionHandler {
         return FailureResponseUtil.badRequest("잘못된 인자가 제공되었습니다.");
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiResponse<Object>> authenticationExceptionHandler() {
+    @ExceptionHandler({AuthenticationException.class, MissingRequestCookieException.class})
+    public ResponseEntity<ApiResponse<Object>> authenticationExceptionAndMissingRequestCookieExceptionHandler() {
         return FailureResponseUtil.unauthorized("인증되지 않은 사용자입니다.");
     }
 

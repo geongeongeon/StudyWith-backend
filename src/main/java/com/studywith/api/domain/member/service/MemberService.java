@@ -3,11 +3,14 @@ package com.studywith.api.domain.member.service;
 import com.studywith.api.domain.member.dto.*;
 import com.studywith.api.domain.member.entity.Member;
 import com.studywith.api.domain.member.enums.AccountType;
+import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
 import com.studywith.api.domain.member.exception.MemberNoChangesException;
+import com.studywith.api.domain.member.exception.MemberNotFoundException;
+import com.studywith.api.domain.member.exception.MemberTempNotFoundException;
 import com.studywith.api.domain.member.mapper.MemberMapper;
 import com.studywith.api.domain.member.repository.MemberRepository;
-import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
-import com.studywith.api.domain.member.exception.MemberNotFoundException;
+import com.studywith.api.global.external.OAuth2UserInfo;
+import com.studywith.api.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,11 +28,18 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
+    private final RedisService redisService;
 
     @Transactional
-    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String loginId, String email, String accountType) {
+    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String uuid) {
         setDefaultValues(memberCreateDTO);
-        Member member = memberMapper.toCreateEntity(memberCreateDTO, loginId, email, AccountType.valueOf(accountType));
+
+        OAuth2UserInfo info = redisService.getUserInfo(uuid);
+        if (info == null) {
+            throw new MemberTempNotFoundException("임시 회원 정보가 만료되었습니다.");
+        }
+        Member member = memberMapper.toCreateEntity(memberCreateDTO, info.getLoginId(), info.getEmail(), AccountType.valueOf(info.getAccountType()));
+        redisService.deleteUserInfo(uuid);
 
         return memberMapper.toCreateDTO(memberRepository.save(member));
     }
@@ -46,6 +57,10 @@ public class MemberService {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
         return memberMapper.toDetailDTO(member);
+    }
+
+    public Optional<Member> getMemberByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId);
     }
 
     public List<MemberSummaryDTO> getMembers() {

@@ -35,7 +35,7 @@ public class MemberMapper {
     public MemberCreateDTO toCreateDTO(Member member) {
         return MemberCreateDTO.builder()
                 .nickname(member.getNickname())
-                .gender(member.getGender().toString())
+                .gender(member.getGender().getValue())
                 .birth(member.getBirth().format(dateFormatter))
                 .region(member.getRegion())
                 .profileImage(member.getProfileImage())
@@ -53,7 +53,7 @@ public class MemberMapper {
         return MemberDetailDTO.builder()
                 .nickname(member.getNickname())
                 .email(member.getEmail())
-                .gender(member.getGender().toString())
+                .gender(member.getGender().getValue())
                 .birth(member.getBirth().format(dateFormatter))
                 .region(member.getRegion())
                 .profileImage(member.getProfileImage())
@@ -69,7 +69,7 @@ public class MemberMapper {
                 .nickname(member.getNickname())
                 .email(member.getEmail())
                 .profileImage(member.getProfileImage())
-                .role(member.getRole().toString())
+                .role(member.getRole().getValue())
                 .isActive(member.isActive())
                 .build();
     }

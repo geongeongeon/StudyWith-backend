@@ -1,17 +1,16 @@
 package com.studywith.api.domain.member.enums;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum Role {
 
-    ADMIN("관리자"), MEMBER("회원");
+    ADMIN("ROLE_ADMIN", "관리자"), MEMBER("ROLE_MEMBER", "회원");
 
-    private final String displayName;
+    private final String key;
 
-    @Override
-    public String toString() {
-        return displayName;
-    }
+    private final String value;
 
 }

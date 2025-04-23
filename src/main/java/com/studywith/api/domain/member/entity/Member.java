@@ -3,7 +3,7 @@ package com.studywith.api.domain.member.entity;
 import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.enums.Gender;
 import com.studywith.api.domain.member.enums.Role;
-import com.studywith.api.global.base.BaseEntity;
+import com.studywith.api.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
