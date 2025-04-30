@@ -1,7 +1,6 @@
-package com.studywith.api.global.external;
+package com.studywith.api.global.security;
 
 import com.studywith.api.global.redis.RedisService;
-import com.studywith.api.global.security.CustomOAuth2User;
 import com.studywith.api.global.util.ResponseHeaderUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,26 +29,28 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String registrationId = (authentication instanceof OAuth2AuthenticationToken oAuth2Token) ? oAuth2Token.getAuthorizedClientRegistrationId() : "unknown";
+        String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
         String principalName = authentication.getName();
-
         OAuth2AuthorizedClient oAuth2AuthorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(registrationId, principalName);
+        CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
+
         String accessToken = oAuth2AuthorizedClient.getAccessToken().getTokenValue();
-        String refreshToken = oAuth2AuthorizedClient.getAccessToken().getTokenValue();
+        String refreshToken = oAuth2AuthorizedClient.getRefreshToken().getTokenValue();
+
+        redisService.setAccessToken(user.getLoginId(), accessToken);
+        redisService.setRefreshToken(user.getLoginId(), refreshToken);
 
         ResponseHeaderUtil.setAuthorization(response, "Bearer " + accessToken);
         ResponseHeaderUtil.setCookie(response, "REFRESH_TOKEN", refreshToken, REFRESH_TOKEN_EXPIRATION);
         ResponseHeaderUtil.setCookie(response, "REGISTRATION_ID", registrationId, REFRESH_TOKEN_EXPIRATION);
-
-        CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        redisService.saveTokens(user.getLoginId(), accessToken, refreshToken);
 
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
         boolean isAnonymous = authorities.stream().anyMatch(auth -> "ROLE_ANONYMOUS".equals(auth.getAuthority()));
         if (isAnonymous) {
             String uuid = user.getUuid();
             ResponseHeaderUtil.setCookie(response, "UUID", uuid, OAUTH2_EXPIRATION);
-            response.sendRedirect("http://localhost:5173/signup");
+            response.sendRedirect("http://localhost:5173/signup/step1");
+
             return;
         }
 

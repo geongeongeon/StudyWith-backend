@@ -1,6 +1,6 @@
 package com.studywith.api.global.security;
 
-import com.studywith.api.global.external.CustomOAuth2SuccessHandler;
+import com.studywith.api.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +21,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomOAuth2UserService userService;
     private final CustomOAuth2SuccessHandler successHandler;
     private final OAuth2TokenProvider oAuth2TokenProvider;
+    private final RedisService redisService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -37,9 +39,10 @@ public class SecurityConfig {
                         cors.configurationSource(corsConfigurationSource())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/logout").authenticated()
+                        .anyRequest().permitAll()
                 )
+                .exceptionHandling(error -> error.accessDeniedHandler(accessDeniedHandler))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .oauth2Login(oauth2 ->
                         oauth2.userInfoEndpoint(info -> info.userService(userService))
@@ -47,7 +50,7 @@ public class SecurityConfig {
                                 .failureUrl("http://localhost:5173/login?error=true")
                 )
                 .addFilterBefore(
-                        new CustomAuthenticationFilter(oAuth2TokenProvider),
+                        new CustomAuthenticationFilter(oAuth2TokenProvider, redisService),
                         UsernamePasswordAuthenticationFilter.class
                 );
 

@@ -23,8 +23,11 @@ public class AuthService {
         }
 
         String accessToken = redisService.getAccessToken(loginId);
+        if (accessToken != null && oAuth2TokenProvider.validateAccessToken(registrationId, accessToken)) {
+            return accessToken;
+        }
 
-        return (accessToken == null) ? oAuth2TokenProvider.getAccessToken(registrationId, refreshToken) : accessToken;
+        return oAuth2TokenProvider.getAccessToken(registrationId, refreshToken);
     }
 
     public void revokeAccessToken(String registrationId, String accessToken) {

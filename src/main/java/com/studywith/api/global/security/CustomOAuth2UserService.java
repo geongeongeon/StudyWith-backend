@@ -23,8 +23,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
-        String registrationId = request.getClientRegistration().getRegistrationId();
+        String key = request.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+
         Map<String, Object> attributes = super.loadUser(request).getAttributes();
+        String registrationId = request.getClientRegistration().getRegistrationId();
         OAuth2UserInfo info = OAuth2UserInfo.from(registrationId, attributes);
 
         Member member = memberService.getMemberByLoginId(info.getLoginId()).orElse(null);
@@ -33,8 +35,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (member == null) {
             redisService.saveUserInfo(uuid, info);
         }
-
-        String key = request.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
         return new CustomOAuth2User(key, attributes, info.getLoginId(), role, uuid);
     }

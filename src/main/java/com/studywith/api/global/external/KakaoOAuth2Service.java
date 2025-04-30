@@ -10,13 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,16 +24,16 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class GoogleOAuth2Service {
+public class KakaoOAuth2Service {
 
     private final WebClient webClient;
-    private final GoogleProviderProperties googleProviderProperties;
+    private final KakaoProviderProperties kakaoProviderProperties;
     private final MemberService memberService;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String clientSecret;
 
     // 토큰 재발급
@@ -41,11 +41,10 @@ public class GoogleOAuth2Service {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "refresh_token");
         body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
         body.add("refresh_token", refreshToken);
 
         Map<String, String> response = webClient.post()
-                .uri(googleProviderProperties.getTokenUri())
+                .uri(kakaoProviderProperties.getTokenUri())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(BodyInserters.fromFormData(body))
                 .retrieve()
@@ -58,7 +57,7 @@ public class GoogleOAuth2Service {
     // 정보 추출
     public Authentication getAuthentication(String accessToken) {
         Map<String, Object> userInfoMap = webClient.get()
-                .uri(googleProviderProperties.getUserInfoUri())
+                .uri(kakaoProviderProperties.getUserInfoUri())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -66,7 +65,7 @@ public class GoogleOAuth2Service {
                 .blockOptional()
                 .orElse(Collections.emptyMap());
 
-        String loginId = "google_" + userInfoMap.get("sub");
+        String loginId = "kakao_" + userInfoMap.get("id").toString();
         Member member = memberService.getMemberByLoginId(loginId).orElse(null);
         List<SimpleGrantedAuthority> authorities = (member != null)
                 ? List.of(new SimpleGrantedAuthority(member.getRole().getKey()))
@@ -79,8 +78,8 @@ public class GoogleOAuth2Service {
     // 토큰 검증
     public boolean validateAccessToken(String accessToken) {
         return webClient.get()
-                .uri(UriComponentsBuilder.fromUriString(googleProviderProperties.getTokenInfoUri())
-                        .queryParam("access_token", accessToken).toUriString())
+                .uri(kakaoProviderProperties.getUserInfoUri())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .retrieve()
                 .toBodilessEntity()
                 .map(response -> response.getStatusCode().is2xxSuccessful())
@@ -90,9 +89,16 @@ public class GoogleOAuth2Service {
 
     // 토큰 삭제
     public boolean revokeAccessToken(String accessToken) {
+        String kakaoId = SecurityContextHolder.getContext().getAuthentication().getName().substring(6);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("target_id_type", "user_id");
+        body.add("target_id", kakaoId);
+
         return webClient.post()
-                .uri(UriComponentsBuilder.fromUriString(googleProviderProperties.getTokenRevokeUri())
-                        .queryParam("token", accessToken).toUriString())
+                .uri(kakaoProviderProperties.getTokenRevokeUri())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .body(BodyInserters.fromFormData(body))
                 .retrieve()
                 .toBodilessEntity()
                 .map(response -> response.getStatusCode().is2xxSuccessful())

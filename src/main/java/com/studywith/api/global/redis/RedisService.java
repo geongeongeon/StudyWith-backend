@@ -24,8 +24,11 @@ public class RedisService {
         redisRepository.save(key, info, OAUTH2_EXPIRATION);
     }
 
-    public void saveTokens(String loginId, String accessToken, String refreshToken) {
+    public void setAccessToken(String loginId, String accessToken) {
         redisRepository.save(ACCESS_TOKEN_PREFIX + loginId, accessToken, ACCESS_TOKEN_EXPIRATION);
+    }
+
+    public void setRefreshToken(String loginId, String refreshToken) {
         redisRepository.save(REFRESH_TOKEN_PREFIX + loginId, refreshToken, REFRESH_TOKEN_EXPIRATION);
     }
 

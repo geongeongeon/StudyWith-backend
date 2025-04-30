@@ -16,24 +16,25 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class GoogleOAuth2Service {
+public class NaverOAuth2Service {
 
     private final WebClient webClient;
-    private final GoogleProviderProperties googleProviderProperties;
+    private final NaverProviderProperties naverProviderProperties;
     private final MemberService memberService;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.naver.client-secret}")
     private String clientSecret;
 
     // 토큰 재발급
@@ -45,7 +46,7 @@ public class GoogleOAuth2Service {
         body.add("refresh_token", refreshToken);
 
         Map<String, String> response = webClient.post()
-                .uri(googleProviderProperties.getTokenUri())
+                .uri(naverProviderProperties.getTokenUri())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(BodyInserters.fromFormData(body))
                 .retrieve()
@@ -56,9 +57,10 @@ public class GoogleOAuth2Service {
     }
 
     // 정보 추출
+    @SuppressWarnings("unchecked")
     public Authentication getAuthentication(String accessToken) {
         Map<String, Object> userInfoMap = webClient.get()
-                .uri(googleProviderProperties.getUserInfoUri())
+                .uri(naverProviderProperties.getUserInfoUri())
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -66,7 +68,8 @@ public class GoogleOAuth2Service {
                 .blockOptional()
                 .orElse(Collections.emptyMap());
 
-        String loginId = "google_" + userInfoMap.get("sub");
+        Map<String, Object> response = (Map<String, Object>) userInfoMap.get("response");
+        String loginId = "naver_" + response.get("id");
         Member member = memberService.getMemberByLoginId(loginId).orElse(null);
         List<SimpleGrantedAuthority> authorities = (member != null)
                 ? List.of(new SimpleGrantedAuthority(member.getRole().getKey()))
@@ -79,8 +82,8 @@ public class GoogleOAuth2Service {
     // 토큰 검증
     public boolean validateAccessToken(String accessToken) {
         return webClient.get()
-                .uri(UriComponentsBuilder.fromUriString(googleProviderProperties.getTokenInfoUri())
-                        .queryParam("access_token", accessToken).toUriString())
+                .uri(naverProviderProperties.getUserInfoUri())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .retrieve()
                 .toBodilessEntity()
                 .map(response -> response.getStatusCode().is2xxSuccessful())
@@ -90,9 +93,16 @@ public class GoogleOAuth2Service {
 
     // 토큰 삭제
     public boolean revokeAccessToken(String accessToken) {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "delete");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("access_token", URLEncoder.encode(accessToken, StandardCharsets.UTF_8));
+
         return webClient.post()
-                .uri(UriComponentsBuilder.fromUriString(googleProviderProperties.getTokenRevokeUri())
-                        .queryParam("token", accessToken).toUriString())
+                .uri(naverProviderProperties.getTokenUri())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .body(BodyInserters.fromFormData(body))
                 .retrieve()
                 .toBodilessEntity()
                 .map(response -> response.getStatusCode().is2xxSuccessful())
