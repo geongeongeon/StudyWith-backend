@@ -9,6 +9,7 @@ import com.studywith.api.domain.member.exception.MemberNotFoundException;
 import com.studywith.api.domain.member.exception.MemberTempNotFoundException;
 import com.studywith.api.domain.member.mapper.MemberMapper;
 import com.studywith.api.domain.member.repository.MemberRepository;
+import com.studywith.api.global.common.ImageService;
 import com.studywith.api.global.external.OAuth2UserInfo;
 import com.studywith.api.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,15 +32,17 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
     private final RedisService redisService;
+    private final ImageService imageService;
 
     @Transactional
-    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, String uuid) {
-        setDefaultValues(memberCreateDTO);
-
+    public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, MultipartFile profileImage, String uuid) throws IOException {
         OAuth2UserInfo info = redisService.getUserInfo(uuid);
         if (info == null) {
             throw new MemberTempNotFoundException("임시 회원 정보가 만료되었습니다.");
         }
+
+        setDefaultValues(memberCreateDTO, profileImage);
+
         Member member = memberMapper.toCreateEntity(memberCreateDTO, info.getLoginId(), info.getEmail(), AccountType.valueOf(info.getAccountType()));
         redisService.deleteUserInfo(uuid);
 
@@ -75,7 +80,6 @@ public class MemberService {
     @CacheEvict(value = "member", key = "#id")
     public MemberUpdateDTO updateMember(Long id, MemberUpdateDTO memberUpdateDTO) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
-
         if (!updateFieldsIfChanged(member, memberUpdateDTO)) {
             throw new MemberNoChangesException("변경된 정보가 없습니다.");
         }
@@ -87,17 +91,19 @@ public class MemberService {
     @CacheEvict(value = "member", key = "#id")
     public void deleteMember(Long id) {
         memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
-
         memberRepository.deleteById(id);
     }
 
-    private void setDefaultValues(MemberCreateDTO memberCreateDTO) {
-        if (memberCreateDTO.getProfileImage() == null) {
+    private void setDefaultValues(MemberCreateDTO memberCreateDTO, MultipartFile profileImage) throws IOException {
+        if (profileImage == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/images/profile/default/male.png");
+                memberCreateDTO.setProfileImage("/uploads/profile/default/male.png");
             } else if ("F".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/images/profile/default/female.png");
+                memberCreateDTO.setProfileImage("/uploads/profile/default/female.png");
             }
+        } else {
+            String profileImagePath = imageService.upload(profileImage, "/uploads/profile/");
+            memberCreateDTO.setProfileImage(profileImagePath);
         }
 
         if (memberCreateDTO.getBio() == null) {

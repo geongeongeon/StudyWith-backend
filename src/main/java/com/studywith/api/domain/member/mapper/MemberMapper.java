@@ -6,6 +6,7 @@ import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.enums.Gender;
 import com.studywith.api.domain.member.enums.Role;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,8 +28,8 @@ public class MemberMapper {
                 .profileImage(memberCreateDTO.getProfileImage())
                 .bio(memberCreateDTO.getBio())
                 .accountType(accountType)
-                .role(Role.MEMBER) // 회원 생성 시 기본값
-                .isActive(true) // 회원 생성 시 기본값
+                .role(Role.MEMBER)
+                .isActive(true)
                 .build();
     }
 

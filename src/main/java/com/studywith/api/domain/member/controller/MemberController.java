@@ -11,7 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,9 +24,11 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(@Valid @RequestBody MemberCreateDTO memberCreateDTO, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<MemberCreateDTO>> createMember(
+            @RequestPart MemberCreateDTO memberCreateDTO, @RequestPart(required = false) MultipartFile profileImage, HttpServletRequest request, HttpServletResponse response
+    ) throws IOException {
         String uuid = ResponseHeaderUtil.getCookie(request, "UUID");
-        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, uuid);
+        MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, profileImage, uuid);
         ResponseHeaderUtil.setCookie(response, "UUID", "", 0L);
 
         return SuccessResponseUtil.created("회원 가입이 성공적으로 완료되었습니다.", createdMember);
