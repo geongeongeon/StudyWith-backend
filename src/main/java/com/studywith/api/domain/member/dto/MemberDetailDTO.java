@@ -7,6 +7,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class MemberDetailDTO {
 
     private String nickname;

@@ -34,6 +34,8 @@ public class MemberService {
     private final RedisService redisService;
     private final ImageService imageService;
 
+    private final String MEMBER_PROFILE_IMAGE_PREFIX = "/uploads/profile/";
+
     @Transactional
     public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, MultipartFile profileImage, String uuid) throws IOException {
         OAuth2UserInfo info = redisService.getUserInfo(uuid);
@@ -57,13 +59,27 @@ public class MemberService {
         return memberMapper.toNicknameDTO(nickname);
     }
 
-    @Cacheable(value = "member", key = "#id")
-    public MemberDetailDTO getMemberById(Long id) {
+    @Cacheable(value = "member", key = "'id:' + #id")
+    public MemberDetailDTO getMemberDetailById(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
         return memberMapper.toDetailDTO(member);
     }
 
+    @Cacheable(value = "member", key = "'login-id:' + #loginId")
+    public MemberDetailDTO getMemberDetailByLoginId(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        return memberMapper.toDetailDTO(member);
+    }
+
+    public MemberHeaderDTO getMemberHeaderByLoginId(String loginId) {
+        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        return memberMapper.toHeaderDTO(member);
+    }
+
+    // 인증 목적의 회원 조회
     public Optional<Member> getMemberByLoginId(String loginId) {
         return memberRepository.findByLoginId(loginId);
     }
@@ -77,10 +93,10 @@ public class MemberService {
     }
 
     @Transactional
-    @CacheEvict(value = "member", key = "#id")
-    public MemberUpdateDTO updateMember(Long id, MemberUpdateDTO memberUpdateDTO) {
+    @CacheEvict(value = "member", key = "'id:' + #id")
+    public MemberUpdateDTO updateMember(Long id, MemberUpdateDTO memberUpdateDTO, MultipartFile profileImage) throws IOException {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
-        if (!updateFieldsIfChanged(member, memberUpdateDTO)) {
+        if (!updateFieldsIfChanged(member, memberUpdateDTO, profileImage)) {
             throw new MemberNoChangesException("변경된 정보가 없습니다.");
         }
 
@@ -88,21 +104,45 @@ public class MemberService {
     }
 
     @Transactional
-    @CacheEvict(value = "member", key = "#id")
-    public void deleteMember(Long id) {
-        memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+    @CacheEvict(value = "member", key = "'login-id:' + #loginId")
+    public MemberDetailDTO updateMe(String loginId, MemberUpdateDTO memberUpdateDTO, MultipartFile profileImage) throws IOException {
+        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+        if (!updateFieldsIfChanged(member, memberUpdateDTO, profileImage)) {
+            throw new MemberNoChangesException("변경된 정보가 없습니다.");
+        }
+
+        return memberMapper.toDetailDTO(memberRepository.save(member));
+    }
+
+    @Transactional
+    @CacheEvict(value = "member", key = "'id:' + #id")
+    public void deleteMember(String refreshToken, Long id) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
         memberRepository.deleteById(id);
+
+        redisService.deleteTokens(member.getLoginId());
+        redisService.deleteLoginId(refreshToken);
+    }
+
+    @Transactional
+    @CacheEvict(value = "member", key = "'login-id:' + #loginId")
+    public void deleteMe(String refreshToken, String loginId) {
+        Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+        memberRepository.deleteById(member.getId());
+
+        redisService.deleteTokens(loginId);
+        redisService.deleteLoginId(refreshToken);
     }
 
     private void setDefaultValues(MemberCreateDTO memberCreateDTO, MultipartFile profileImage) throws IOException {
         if (profileImage == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/uploads/profile/default/male.png");
+                memberCreateDTO.setProfileImage(MEMBER_PROFILE_IMAGE_PREFIX + "default/male.png");
             } else if ("F".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage("/uploads/profile/default/female.png");
+                memberCreateDTO.setProfileImage(MEMBER_PROFILE_IMAGE_PREFIX + "default/female.png");
             }
         } else {
-            String profileImagePath = imageService.upload(profileImage, "/uploads/profile/");
+            String profileImagePath = imageService.upload(profileImage, MEMBER_PROFILE_IMAGE_PREFIX);
             memberCreateDTO.setProfileImage(profileImagePath);
         }
 
@@ -111,11 +151,16 @@ public class MemberService {
         }
     }
 
-    private boolean updateFieldsIfChanged(Member member, MemberUpdateDTO memberUpdateDTO) {
+    private boolean updateFieldsIfChanged(Member member, MemberUpdateDTO memberUpdateDTO, MultipartFile profileImage) throws IOException {
         boolean isChanged = false;
 
         if (!member.getNickname().equals(memberUpdateDTO.getNickname())) {
             member.setNickname(memberUpdateDTO.getNickname());
+            isChanged = true;
+        }
+
+        if (!member.getEmail().equals(memberUpdateDTO.getEmail())) {
+            member.setEmail(memberUpdateDTO.getEmail());
             isChanged = true;
         }
 
@@ -124,7 +169,11 @@ public class MemberService {
             isChanged = true;
         }
 
-        if (!member.getProfileImage().equals(memberUpdateDTO.getProfileImage())) {
+        if (profileImage != null && !profileImage.isEmpty()) {
+            String profileImagePath = imageService.upload(profileImage, MEMBER_PROFILE_IMAGE_PREFIX);
+            memberUpdateDTO.setProfileImage(profileImagePath);
+            imageService.delete(member.getProfileImage());
+
             member.setProfileImage(memberUpdateDTO.getProfileImage());
             isChanged = true;
         }

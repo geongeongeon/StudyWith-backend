@@ -6,7 +6,6 @@ import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.enums.Gender;
 import com.studywith.api.domain.member.enums.Role;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -78,9 +77,17 @@ public class MemberMapper {
     public MemberUpdateDTO toUpdateDTO(Member member) {
         return MemberUpdateDTO.builder()
                 .nickname(member.getNickname())
+                .email(member.getEmail())
                 .region(member.getRegion())
                 .profileImage(member.getProfileImage())
                 .bio(member.getBio())
+                .build();
+    }
+
+    public MemberHeaderDTO toHeaderDTO(Member member) {
+        return MemberHeaderDTO.builder()
+                .nickname(member.getNickname())
+                .profileImage(member.getProfileImage())
                 .build();
     }
 

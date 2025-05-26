@@ -39,6 +39,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         redisService.setAccessToken(user.getLoginId(), accessToken);
         redisService.setRefreshToken(user.getLoginId(), refreshToken);
+        redisService.setLoginId(user.getLoginId(), refreshToken);
 
         ResponseHeaderUtil.setAuthorization(response, "Bearer " + accessToken);
         ResponseHeaderUtil.setCookie(response, "REFRESH_TOKEN", refreshToken, REFRESH_TOKEN_EXPIRATION);
@@ -54,7 +55,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             return;
         }
 
-        response.sendRedirect("http://localhost:5173/");
+        response.sendRedirect("http://localhost:5173/?status=200");
     }
 
 }

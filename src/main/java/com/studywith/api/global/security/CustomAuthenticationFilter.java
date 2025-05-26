@@ -23,6 +23,12 @@ public class CustomAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/api/connection/test")) {
+            chain.doFilter(servletRequest, servletResponse);
+
+            return;
+        }
 
         String registrationId = ResponseHeaderUtil.getCookie(request, "REGISTRATION_ID");
         String accessToken = ResponseHeaderUtil.getAuthorization(request, "Bearer ");
@@ -32,10 +38,17 @@ public class CustomAuthenticationFilter extends GenericFilterBean {
             Authentication authentication = oAuth2TokenProvider.getAuthentication(registrationId, accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (refreshToken != null) {
-            String newAccessToken = oAuth2TokenProvider.getAccessToken(registrationId, refreshToken);
-            Authentication authentication = oAuth2TokenProvider.getAuthentication(registrationId, newAccessToken);
-            redisService.setAccessToken(authentication.getName(), newAccessToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String loginId = redisService.getLoginId(refreshToken);
+            String accessTokenInRedis = redisService.getAccessToken(loginId);
+            if (accessTokenInRedis != null) {
+                Authentication authentication = oAuth2TokenProvider.getAuthentication(registrationId, accessTokenInRedis);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                String newAccessToken = oAuth2TokenProvider.getAccessToken(registrationId, refreshToken);
+                Authentication authentication = oAuth2TokenProvider.getAuthentication(registrationId, newAccessToken);
+                redisService.setAccessToken(authentication.getName(), newAccessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
 
         chain.doFilter(servletRequest, servletResponse);

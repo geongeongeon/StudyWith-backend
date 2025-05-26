@@ -7,9 +7,9 @@ import com.studywith.api.global.util.ResponseHeaderUtil;
 import com.studywith.api.global.util.SuccessResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +31,7 @@ public class MemberController {
         MemberCreateDTO createdMember = memberService.createMember(memberCreateDTO, profileImage, uuid);
         ResponseHeaderUtil.setCookie(response, "UUID", "", 0L);
 
-        return SuccessResponseUtil.created("회원 가입이 성공적으로 완료되었습니다.", createdMember);
+        return SuccessResponseUtil.created("회원이 성공적으로 가입되었습니다.", createdMember);
     }
 
     @GetMapping("/exists")
@@ -43,7 +43,15 @@ public class MemberController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MemberDetailDTO>> getMemberById(@PathVariable("id") Long id) {
-        MemberDetailDTO member = memberService.getMemberById(id);
+        MemberDetailDTO member = memberService.getMemberDetailById(id);
+
+        return SuccessResponseUtil.ok("회원을 성공적으로 조회했습니다.", member);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MemberDetailDTO>> getMe() {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MemberDetailDTO member = memberService.getMemberDetailByLoginId(loginId);
 
         return SuccessResponseUtil.ok("회원을 성공적으로 조회했습니다.", member);
     }
@@ -56,17 +64,37 @@ public class MemberController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MemberUpdateDTO>> updateMember(@PathVariable("id") Long id, @Valid @RequestBody MemberUpdateDTO memberUpdateDTO) {
-        MemberUpdateDTO updatedMember = memberService.updateMember(id, memberUpdateDTO);
+    public ResponseEntity<ApiResponse<MemberUpdateDTO>> updateMember(
+            @PathVariable("id") Long id, @RequestPart MemberUpdateDTO memberUpdateDTO, @RequestPart(required = false) MultipartFile profileImage
+    ) throws IOException {
+        MemberUpdateDTO updatedMember = memberService.updateMember(id, memberUpdateDTO, profileImage);
 
-        return SuccessResponseUtil.ok("회원이 성공적으로 수정되었습니다.", updatedMember);
+        return SuccessResponseUtil.ok("회원 정보가 성공적으로 변경되었습니다.", updatedMember);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<MemberDetailDTO>> updateMe(
+            @RequestPart MemberUpdateDTO memberUpdateDTO, @RequestPart(required = false) MultipartFile profileImage
+    ) throws IOException {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MemberDetailDTO updatedMember = memberService.updateMe(loginId, memberUpdateDTO, profileImage);
+
+        return SuccessResponseUtil.ok("회원 정보가 성공적으로 변경되었습니다.", updatedMember);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable("id") Long id) {
-        memberService.deleteMember(id);
+    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable("id") Long id, @CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken)  {
+        memberService.deleteMember(refreshToken, id);
 
-        return SuccessResponseUtil.ok("회원이 성공적으로 삭제되었습니다.", null);
+        return SuccessResponseUtil.ok("회원이 성공적으로 탈퇴되었습니다.", null);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> deleteMe(@CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        memberService.deleteMe(refreshToken, loginId);
+
+        return SuccessResponseUtil.ok("회원이 성공적으로 탈퇴되었습니다.", null);
     }
 
 }

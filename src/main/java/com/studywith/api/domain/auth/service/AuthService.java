@@ -30,10 +30,14 @@ public class AuthService {
         return oAuth2TokenProvider.getAccessToken(registrationId, refreshToken);
     }
 
-    public void revokeAccessToken(String registrationId, String accessToken) {
+    public void revokeAccessToken(String registrationId, String accessToken, String refreshToken) {
         boolean isRevoked = oAuth2TokenProvider.revokeAccessToken(registrationId, accessToken);
-        if (!isRevoked) {
+        if (!isRevoked && refreshToken == null) {
             throw new LogoutFailedException("로그아웃 요청이 유효하지 않습니다.");
         }
+
+        String loginId = redisService.getLoginId(refreshToken);
+        redisService.deleteTokens(loginId);
+        redisService.deleteLoginId(refreshToken);
     }
 }

@@ -14,9 +14,11 @@ public class MemberUpdateDTO {
     private String nickname;
 
     @NotNull
-    private String region;
+    private String email;
 
     @NotNull
+    private String region;
+
     private String profileImage;
 
     @NotNull
