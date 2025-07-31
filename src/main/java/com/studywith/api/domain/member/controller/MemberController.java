@@ -60,7 +60,7 @@ public class MemberController {
     public ResponseEntity<ApiResponse<List<MemberSummaryDTO>>> getMembers() {
         List<MemberSummaryDTO> members = memberService.getMembers();
 
-        return SuccessResponseUtil.ok("회원 목록을 성공적으로 불러왔습니다.", members);
+        return SuccessResponseUtil.ok("회원 목록을 성공적으로 조회했습니다.", members);
     }
 
     @PutMapping("/{id}")
@@ -69,7 +69,7 @@ public class MemberController {
     ) throws IOException {
         MemberUpdateDTO updatedMember = memberService.updateMember(id, memberUpdateDTO, profileImage);
 
-        return SuccessResponseUtil.ok("회원 정보가 성공적으로 변경되었습니다.", updatedMember);
+        return SuccessResponseUtil.ok("회원 정보가 성공적으로 조회했습니다.", updatedMember);
     }
 
     @PutMapping("/me")

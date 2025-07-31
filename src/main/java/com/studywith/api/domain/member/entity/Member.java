@@ -3,11 +3,14 @@ package com.studywith.api.domain.member.entity;
 import com.studywith.api.domain.member.enums.AccountType;
 import com.studywith.api.domain.member.enums.Gender;
 import com.studywith.api.domain.member.enums.Role;
+import com.studywith.api.domain.message.entity.Message;
 import com.studywith.api.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -54,5 +57,13 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isActive;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<Message> sentMessages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
+    private List<Message> receivedMessages = new ArrayList<>();
 
 }

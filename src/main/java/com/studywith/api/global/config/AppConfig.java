@@ -1,8 +1,10 @@
 package com.studywith.api.global.config;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import jakarta.persistence.EntityManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +13,8 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.tcp.TcpClient;
-
 import reactor.netty.http.client.HttpClient;
+
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,6 +40,11 @@ public class AppConfig {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+    }
+
+    @Bean
+    public JPAQueryFactory jpaQueryFactory(EntityManager entityManager) {
+        return new JPAQueryFactory(entityManager);
     }
 
 }

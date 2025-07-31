@@ -3,12 +3,14 @@ package com.studywith.api.domain.member.service;
 import com.studywith.api.domain.member.dto.*;
 import com.studywith.api.domain.member.entity.Member;
 import com.studywith.api.domain.member.enums.AccountType;
-import com.studywith.api.domain.member.exception.MemberNicknameAlreadyInUseException;
-import com.studywith.api.domain.member.exception.MemberNoChangesException;
-import com.studywith.api.domain.member.exception.MemberNotFoundException;
-import com.studywith.api.domain.member.exception.MemberTempNotFoundException;
+import com.studywith.api.domain.member.exception.*;
 import com.studywith.api.domain.member.mapper.MemberMapper;
 import com.studywith.api.domain.member.repository.MemberRepository;
+import com.studywith.api.domain.study.entity.Study;
+import com.studywith.api.domain.study.entity.id.StudyMemberId;
+import com.studywith.api.domain.study.repository.StudyJoinRequestRepository;
+import com.studywith.api.domain.study.repository.StudyMemberRepository;
+import com.studywith.api.domain.study.repository.StudyRepository;
 import com.studywith.api.global.common.ImageService;
 import com.studywith.api.global.external.OAuth2UserInfo;
 import com.studywith.api.global.redis.RedisService;
@@ -33,6 +35,9 @@ public class MemberService {
     private final MemberMapper memberMapper;
     private final RedisService redisService;
     private final ImageService imageService;
+    private final StudyRepository studyRepository;
+    private final StudyMemberRepository studyMemberRepository;
+    private final StudyJoinRequestRepository studyJoinRequestRepository;
 
     private final String MEMBER_PROFILE_IMAGE_PREFIX = "/uploads/profile/";
 
@@ -118,8 +123,8 @@ public class MemberService {
     @CacheEvict(value = "member", key = "'id:' + #id")
     public void deleteMember(String refreshToken, Long id) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
-        memberRepository.deleteById(id);
 
+        memberRepository.deleteById(id);
         redisService.deleteTokens(member.getLoginId());
         redisService.deleteLoginId(refreshToken);
     }
@@ -128,8 +133,19 @@ public class MemberService {
     @CacheEvict(value = "member", key = "'login-id:' + #loginId")
     public void deleteMe(String refreshToken, String loginId) {
         Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
-        memberRepository.deleteById(member.getId());
+        if (studyRepository.existsByManagerId(member.getId())) throw new MemberIsManagingStudyException("총관리자를 맡고 있는 스터디가 존재합니다.");
 
+        List<Study> studies = studyMemberRepository.findStudiesByMemberId(member.getId());
+        for (Study study : studies) {
+            if (study.getSubManager() != null && study.getSubManager().getId().equals(member.getId())) {
+                study.setSubManager(null);
+                studyRepository.save(study);
+            }
+            studyMemberRepository.deleteById(new StudyMemberId(member.getId(), study.getId()));
+        }
+
+        studyJoinRequestRepository.deleteAllByMemberId(member.getId());
+        memberRepository.deleteById(member.getId());
         redisService.deleteTokens(loginId);
         redisService.deleteLoginId(refreshToken);
     }

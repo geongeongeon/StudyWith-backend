@@ -50,7 +50,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         if (isAnonymous) {
             String uuid = user.getUuid();
             ResponseHeaderUtil.setCookie(response, "UUID", uuid, OAUTH2_EXPIRATION);
-            response.sendRedirect("http://localhost:5173/signup/step1");
+            response.sendRedirect("http://localhost:5173/auth/signup/step1");
 
             return;
         }

@@ -14,6 +14,11 @@ public class MemberExceptionHandler {
         return FailureResponseUtil.conflict(e.getMessage());
     }
 
+    @ExceptionHandler(MemberIsManagingStudyException.class)
+    public ResponseEntity<ApiResponse<Object>> memberIsManagingStudyExceptionHandler(MemberIsManagingStudyException e) {
+        return FailureResponseUtil.conflict(e.getMessage());
+    }
+
     @ExceptionHandler(MemberTempNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> memberTempNotFoundExceptionHandler(MemberTempNotFoundException e) {
         return FailureResponseUtil.badRequest(e.getMessage());
