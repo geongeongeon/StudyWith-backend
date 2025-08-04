@@ -44,14 +44,14 @@ public class StudyService {
     private final TagRepository tagRepository;
     private final StudyTagRepository studyTagRepository;
 
-    private final String STUDY_THUMBNAIL_IMAGE_PREFIX = "/uploads/thumbnail/";
+    private final String STUDY_THUMBNAIL_IMAGE_PREFIX = "uploads/studies/";
 
     @Transactional
     public StudyCreateDTO createStudy(StudyCreateDTO studyCreateDTO, MultipartFile thumbnailImage, String loginId) throws IOException {
         if (thumbnailImage != null && !thumbnailImage.isEmpty()) {
             String thumbnailImagePath = imageService.upload(thumbnailImage, STUDY_THUMBNAIL_IMAGE_PREFIX);
             studyCreateDTO.setThumbnailImage(thumbnailImagePath);
-        } else studyCreateDTO.setThumbnailImage(STUDY_THUMBNAIL_IMAGE_PREFIX + "default/study-with.jpg");
+        } else studyCreateDTO.setThumbnailImage(imageService.getImagePrefix() + STUDY_THUMBNAIL_IMAGE_PREFIX + "default/study-with.jpg");
 
         Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
 
@@ -250,6 +250,7 @@ public class StudyService {
         if (!study.getManager().getLoginId().equals(loginId)) throw new StudyAccessDeniedException("권한이 없습니다.");
         if (studyMemberRepository.countByStudyId(studyId) > 1L) throw new StudyHasOtherMembersException("스터디에 다른 회원이 존재합니다.");
 
+        imageService.delete(study.getThumbnailImage());
         studyRepository.deleteById(studyId);
     }
 

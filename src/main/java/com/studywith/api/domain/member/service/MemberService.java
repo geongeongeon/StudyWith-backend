@@ -39,7 +39,7 @@ public class MemberService {
     private final StudyMemberRepository studyMemberRepository;
     private final StudyJoinRequestRepository studyJoinRequestRepository;
 
-    private final String MEMBER_PROFILE_IMAGE_PREFIX = "/uploads/profile/";
+    private final String MEMBER_PROFILE_IMAGE_PREFIX = "uploads/members/";
 
     @Transactional
     public MemberCreateDTO createMember(MemberCreateDTO memberCreateDTO, MultipartFile profileImage, String uuid) throws IOException {
@@ -144,6 +144,7 @@ public class MemberService {
             studyMemberRepository.deleteById(new StudyMemberId(member.getId(), study.getId()));
         }
 
+        imageService.delete(member.getProfileImage());
         studyJoinRequestRepository.deleteAllByMemberId(member.getId());
         memberRepository.deleteById(member.getId());
         redisService.deleteTokens(loginId);
@@ -153,9 +154,9 @@ public class MemberService {
     private void setDefaultValues(MemberCreateDTO memberCreateDTO, MultipartFile profileImage) throws IOException {
         if (profileImage == null) {
             if ("M".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage(MEMBER_PROFILE_IMAGE_PREFIX + "default/male.png");
+                memberCreateDTO.setProfileImage(imageService.getImagePrefix() + MEMBER_PROFILE_IMAGE_PREFIX + "default/male.png");
             } else if ("F".equalsIgnoreCase(memberCreateDTO.getGender())) {
-                memberCreateDTO.setProfileImage(MEMBER_PROFILE_IMAGE_PREFIX + "default/female.png");
+                memberCreateDTO.setProfileImage(imageService.getImagePrefix() + MEMBER_PROFILE_IMAGE_PREFIX + "default/female.png");
             }
         } else {
             String profileImagePath = imageService.upload(profileImage, MEMBER_PROFILE_IMAGE_PREFIX);

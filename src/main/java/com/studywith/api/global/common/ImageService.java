@@ -1,41 +1,70 @@
 package com.studywith.api.global.common;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class ImageService {
 
-    @Value("${spring.image.base-path}")
-    private String prefix;
+    private final S3Client s3Client;
 
-    public String upload(MultipartFile image, String relativePath) throws IOException {
-        String fileName = image.getOriginalFilename();
-        String fileFormat = fileName.substring(fileName.lastIndexOf("."));
-        String uuid = UUID.randomUUID().toString();
+    @Value("${spring.cloud.aws.s3.bucket}")
+    private String bucket;
 
-        String path = prefix + relativePath;
-        File dir = new File(path);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+    @Value("${spring.cloud.aws.region.static}")
+    private String region;
 
-        File file = new File(path + uuid + fileFormat);
-        image.transferTo(file);
-
-        return relativePath + uuid + fileFormat;
+    public String getImagePrefix() {
+        return "https://%s.s3.%s.amazonaws.com/".formatted(bucket, region);
     }
 
-    public boolean delete(String relativePath) {
-        String path = prefix + relativePath;
-        File file = new File(path);
+    public String upload(MultipartFile image, String relativePath) throws IOException {
+        String originalName = image.getOriginalFilename();
+        String extension = originalName.substring(originalName.lastIndexOf("."));
+        String uuid = UUID.randomUUID().toString();
 
-        return file.exists() && file.delete();
+        String key = relativePath + uuid + extension;
+
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(image.getContentType())
+                .build();
+
+        s3Client.putObject(request, RequestBody.fromBytes(image.getBytes()));
+
+        return getImagePrefix() + key;
+    }
+
+    public boolean delete(String fullUrl) {
+        try {
+            if (fullUrl == null || fullUrl.contains("/default")) {
+                return false;
+            }
+
+            String key = fullUrl.replace(getImagePrefix(), "");
+
+            DeleteObjectRequest request = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(request);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }
