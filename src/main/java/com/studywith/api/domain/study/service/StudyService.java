@@ -293,6 +293,11 @@ public class StudyService {
         Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
         if (getRole(loginId, study).equals("guest")) throw new StudyAccessDeniedException("스터디의 회원이 아닙니다.");
 
+        if (study.getSubManager() != null && study.getSubManager().getNickname().equals(member.getNickname())) {
+            study.setSubManager(null);
+            studyRepository.save(study);
+        }
+
         StudyMember studyMember = studyMemberRepository.findByMemberIdAndStudyId(member.getId(), studyId);
         studyMemberRepository.deleteById(studyMember.getId());
     }

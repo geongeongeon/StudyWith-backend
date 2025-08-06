@@ -24,7 +24,7 @@ public class CustomAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String requestURI = request.getRequestURI();
-        if (requestURI.equals("/api/connection/test")) {
+        if (requestURI.equals("/connection/test")) {
             chain.doFilter(servletRequest, servletResponse);
 
             return;

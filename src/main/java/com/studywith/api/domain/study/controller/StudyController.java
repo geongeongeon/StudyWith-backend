@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/studies")
+@RequestMapping("/studies")
 @RequiredArgsConstructor
 public class StudyController {
 

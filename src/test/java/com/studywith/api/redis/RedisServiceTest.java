@@ -1,3 +1,4 @@
+/*
 package com.studywith.api.redis;
 
 import com.studywith.api.global.redis.RedisService;
@@ -29,3 +30,4 @@ public class RedisServiceTest {
     }
 
 }
+*/

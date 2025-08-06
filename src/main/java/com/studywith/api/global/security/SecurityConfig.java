@@ -39,7 +39,7 @@ public class SecurityConfig {
                         cors.configurationSource(corsConfigurationSource())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/logout").authenticated()
+                        .requestMatchers("/auth/logout").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(error -> error.accessDeniedHandler(accessDeniedHandler))
@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 ->
                         oauth2.userInfoEndpoint(info -> info.userService(userService))
                                 .successHandler(successHandler)
-                                .failureUrl("http://localhost:5173/login?error=true")
+                                .failureUrl("http://www.studywith.site/auth/login?error=true")
                 )
                 .addFilterBefore(
                         new CustomAuthenticationFilter(oAuth2TokenProvider, redisService),
@@ -60,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+        corsConfig.setAllowedOrigins(List.of("http://www.studywith.site", "http://api.studywith.site:8080"));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         corsConfig.setAllowedHeaders(List.of("*"));
         corsConfig.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
