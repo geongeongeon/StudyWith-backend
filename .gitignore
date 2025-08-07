@@ -38,3 +38,4 @@ out/
 
 ### 제외 ###
 src/main/resources/application-dev.yml
+docker-compose.yml
