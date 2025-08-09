@@ -185,25 +185,55 @@
 * **라우터** <br/>
   Base URL: `http://www.studywith.site`
 
-  |  | 경로                 | 설명           |
-  |----|---------------------|--------------|
-  | 1  | /                   | 홈 페이지        |
-  | 2  | /auth/login         | 로그인 페이지      |
-  | 3  | /auth/signup/step1  | 회원가입 1단계 페이지 |
-  | 4  | /auth/signup/step2  | 회원가입 2단계 페이지 |
-  | 5  | /members/me         | 본인 정보 페이지    |
-  | 6  | /studies            | 스터디 목록 페이지   |
-  | 7  | /studies/:id        | 스터디 정보 페이지   |
-  | 8  | /studies/create     | 스터디 생성 페이지   |
+  |  | 경로                 | 설명                 |
+  |----|---------------------|--------------------|
+  | 1  | /                   | 홈 페이지              |
+  | 2  | /auth/login         | 로그인 페이지            |
+  | 3  | /auth/signup/step1  | 회원가입 1단계 페이지       |
+  | 4  | /auth/signup/step2  | 회원가입 2단계 페이지       |
+  | 5  | /members/me         | 본인 정보 페이지          |
+  | 6  | /studies            | 스터디 목록 페이지         |
+  | 7  | /studies/:id        | 특정 스터디(:id) 정보 페이지 |
+  | 8  | /studies/create     | 스터디 생성 페이지         |
 
 <br/>
 
-### ✨ 기능 설명
+### ✨ 페이지별 기능
 ***
-  * 사용자는 소셜 계정을 통해 간편 가입을 할 수 있다.
-  * 지원하는 소셜 로그인은 구글, 네이버, 카카오가 있다.
-  * 
-    | 페이지   | 화면                                            |
-    |-------|-----------------------------------------------|
-    | 홈 페이지 | <img src="asset/home-guest.png" width="100%"> |
-    | 로그인 페이지 | <img src="asset/logo.jpg" width="100%">       |
+<table style="width:100%;">
+  <tr style="text-align:center;">
+    <th style="width:10%;">기능</th>
+    <th style="width:70%;">페이지</th>
+    <th style="width:20%;">설명</th>
+  </tr>
+
+  <tr>
+    <td>홈</td>
+    <td><img src="asset/home-guest.png" style="width:100%;" /></td>
+    <td>서버 연결 상태 확인 API를 자동 요청하고, 문제가 있을 경우 알림창을 띄운다. </td>
+  </tr>
+
+  <tr>
+    <td>로그인</td>
+    <td><img src="asset/login.png" style="width:100%;" /></td>
+    <td>본인의 구글, 네이버, 카카오 계정을 통해 로그인을 할 수 있다.</td>
+  </tr>
+
+  <tr>
+    <td>회원가입</td>
+    <td><img src="asset/signup-1.png" style="width:100%;" /></td>
+    <td>최소한의 정보 입력만으로 빠르고 간편하게 가입할 수 있다.</td>
+  </tr>
+
+  <tr>
+    <td>회원가입</td>
+    <td><img src="asset/signup-2.png" style="width:100%;" /></td>
+    <td>프로필 사진과 자기소개는 선택 사항이며, 입력하지 않을 경우 설정된 기본값으로 가입된다.</td>
+  </tr>
+
+  <tr>
+    <td>스터디목록</td>
+    <td><img src="asset/study-list.png" style="width:100%;" /></td>
+    <td>스터디 목록을 확인할 수 있고, 필터 및 정렬과 검색을 통해 원하는 스터디를 검색할 수 있다.</td>
+  </tr>
+</table>
