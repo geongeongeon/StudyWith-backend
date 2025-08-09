@@ -14,7 +14,9 @@
 * [개발 일정](#개발-일정)
 * [컨벤션](#컨벤션)
 * [프로젝트 구조](#프로젝트-구조)
-* [데이터베이스 설계](#-데이터베이스-설계)
+* [데이터베이스 설계](#데이터베이스-설계)
+* [앤드포인트 및 라우터](#앤드포인트-및-라우터)
+* [기능 상세](#기능-상세)
 
 <br/>
 
@@ -198,42 +200,98 @@
 
 <br/>
 
-### ✨ 페이지별 기능
+### ✨ 기능 상세
 ***
-<table style="width:100%;">
-  <tr style="text-align:center;">
-    <th style="width:10%;">기능</th>
-    <th style="width:70%;">페이지</th>
-    <th style="width:20%;">설명</th>
+<table>
+  <tr>
+    <th width=13%>기능</th>
+    <th>페이지</th>
+    <th width=27%>설명</th>
   </tr>
 
   <tr>
-    <td>홈</td>
-    <td><img src="asset/home-guest.png" style="width:100%;" /></td>
-    <td>서버 연결 상태 확인 API를 자동 요청하고, 문제가 있을 경우 알림창을 띄운다. </td>
+    <td >홈</td>
+    <td><img src="asset/home-guest.png" width=100% /></td>
+    <td>헤더에는 로그인 상태에 따라 로그인 / 프로필 사진, 별명, 쪽지함, 로그아웃이 표시된다.</td>
   </tr>
 
   <tr>
     <td>로그인</td>
-    <td><img src="asset/login.png" style="width:100%;" /></td>
+    <td><img src="asset/login.png" width=100% /></td>
     <td>본인의 구글, 네이버, 카카오 계정을 통해 로그인을 할 수 있다.</td>
   </tr>
 
   <tr>
-    <td>회원가입</td>
-    <td><img src="asset/signup-1.png" style="width:100%;" /></td>
-    <td>최소한의 정보 입력만으로 빠르고 간편하게 가입할 수 있다.</td>
+    <td>회원 가입-1</td>
+    <td><img src="asset/signup-1.png" width=100% /></td>
+    <td>서비스 이용 시에 필요한 최소한의 정보들만 필수로 입력받는다.</td>
   </tr>
 
   <tr>
-    <td>회원가입</td>
-    <td><img src="asset/signup-2.png" style="width:100%;" /></td>
-    <td>프로필 사진과 자기소개는 선택 사항이며, 입력하지 않을 경우 설정된 기본값으로 가입된다.</td>
+    <td>회원 가입-2</td>
+    <td><img src="asset/signup-2.png" width=100% /></td>
+    <td>선택적으로 추가 정보를 입력 받으며, 입력하지 않을 경우 기본값으로 가입된다.</td>
   </tr>
 
   <tr>
-    <td>스터디목록</td>
-    <td><img src="asset/study-list.png" style="width:100%;" /></td>
-    <td>스터디 목록을 확인할 수 있고, 필터 및 정렬과 검색을 통해 원하는 스터디를 검색할 수 있다.</td>
+    <td>스터디 목록</td>
+    <td><img src="asset/study-list.png" width=100% /></td>
+    <td>스터디명 · 내용 · 지역 · 태그로 스터디를 검색할 수 있으며, 모집 상태 필터와 인기순 / 최신순 정렬을 적용할 수 있다.</td>
+  </tr>
+
+  <tr>
+    <td>스터디 정보</td>
+    <td><img src="asset/study-detail.png" width=100% /></td>
+    <td>스터디의 상세 정보를 확인할 수 있고, 가입 상태에 따라 가입 요청 버튼이 표시된다.</td>
+  </tr>
+
+  <tr>
+    <td>스터디 회원 목록</td>
+    <td><img src="asset/members.png" width=100% /></td>
+    <td>스터디의 회원 목록을 확인할 수 있고, 권한에 따라 다른 회원에게 권한 설정 · 쪽지 · 내보내기를 할 수 있다.</td>
+  </tr>
+
+  <tr>
+    <td>스터디 가입 요청 목록</td>
+    <td><img src="asset/request.png" width=100%/></td>
+    <td>스터디에 가입을 요청한 회원 목록을 확인하고 승인 및 거절을 할 수 있다.</td>
+  </tr>
+
+  <tr>
+    <td>스터디 탈퇴</td>
+    <td><img src="asset/study-delete.png" width=100% /></td>
+    <td>체크 박스를 클릭하면 생기는 입력 창에 '탈퇴하겠습니다'를 입력하면 스터디에서 탈퇴된다.</td>
+  </tr>
+
+  <tr>
+    <td>가입한 스터디</td>
+    <td><img src="asset/member-studies.png" width=100% /></td>
+    <td>본인이 가입한 스터디를 확인할 수 있으며, 각 스터디 카드를 클릭하면 해당하는 스터디 페이지로 이동한다.</td>
+  </tr>
+
+<tr>
+    <td>회원 정보</td>
+    <td><img src="asset/member-profile.png" width=100% /></td>
+    <td>본인의 회원 정보를 확인하고 수정할 수 있다.</td>
+  </tr>
+
+<tr>
+    <td>회원 탈퇴</td>
+    <td><img src="asset/member-delete.png" width=100% /></td>
+    <td>체크 박스를 클릭하면 생기는 입력 창에 '탈퇴하겠습니다'를 입력하면 사이트에서 탈퇴된다.</td>
+  </tr>
+
+<tr>
+    <td>쪽지 목록</td>
+    <td><img src="asset/message-list.jpg" width=100% /></td>
+    <td>다른 회원들로부터 받은 쪽지들을 확인할 수 있으며, 각 쪽지를 클릭하면 내용이 표시되며, 휴지통 버튼을 통해 삭제할 수 있다.</td>
+  </tr>
+
+<tr>
+    <td>쪽지 작성</td>
+    <td><img src="asset/message-write.jpg" width=100% height="500px" /></td>
+    <td>쪽지는 같은 스터디에 있는 회원끼리만 주고 받을 수 있으며, 특정 회원에게 쪽지 보내기 버튼을 클릭하면 스터디와 받는 사람이 자동으로 설정된다.</td>
   </tr>
 </table>
+
+<br/>
